@@ -3,9 +3,9 @@ package com.example.demo.controllers;
 import atlantafx.base.controls.Notification;
 import atlantafx.base.theme.Styles;
 import atlantafx.base.util.Animations;
-import com.example.demo.components.BasicCard;
 import com.example.demo.MainApplication;
 import com.example.demo.client.INewsClient;
+import com.example.demo.components.BasicCard;
 import com.example.demo.dto.NewsResponse;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -51,18 +51,24 @@ public class NewsFeedController extends VBox {
         initialize();
     }
 
-
-    public void injectMainController(MainController mainController){
-        this.mainController = mainController;
-    }
-
     @NotNull
     private static Task<List<HBox>> getListTask(NewsResponse newsData, int cardsInRow) {
         Task<List<HBox>> cardData = new Task<>() {
             @Override
             protected List<HBox> call() throws Exception {
+
                 List<BasicCard> basicCards = newsData.getResults().stream()
-                        .map(r -> new BasicCard(r.getTitle(), r.getContent(), r.getDescription(), r.getPubDate()))
+                        .map(r -> {
+                            String description;
+                            if (r.getDescription() == null) {
+                                description = "";
+                            }
+                            else {
+                                description = r.getDescription().length() > 100 ? r.getDescription()
+                                        .substring(0, 100) : r.getDescription();
+                            }
+                            return new BasicCard(r.getTitle(), r.getContent(), description, r.getPubDate());
+                        })
                         .toList();
 
                 long totalResults = newsData.getTotalResults();
@@ -74,6 +80,7 @@ public class NewsFeedController extends VBox {
                     HBox box = new HBox(10.0);
                     box.getChildren().addAll(cards);
                     rows.add(box);
+
                 }
                 return rows;
             }
@@ -82,18 +89,12 @@ public class NewsFeedController extends VBox {
         return cardData;
     }
 
+    public void injectMainController(MainController mainController) {
+        this.mainController = mainController;
+    }
+
     public void initialize() {
 
-//        try {
-//            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("NewsFeed.fxml"));
-//            fxmlLoader.setRoot(this);
-//            fxmlLoader.setController(this);
-//            fxmlLoader.load();
-//        }
-//        catch (IOException e) {
-//            System.out.println(e.getMessage());
-//            throw new RuntimeException(e);
-//        }
         if (this.cardDisplayArea == null) {
             this.cardDisplayArea = new VBox(10);
             this.cardDisplayArea.setFillWidth(true);
@@ -123,7 +124,7 @@ public class NewsFeedController extends VBox {
                 assert data != null;
                 System.out.println("Data received from API, total results " + data.getTotalResults());
                 Platform.runLater(() -> {
-                    createNewsCards(data, 3);
+                    createNewsCards(data, 5);
                     DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
                     loadNewsDataLabel.setText("Last Updated at: " + LocalDateTime.now());
                     dispatchNewsLoadNotification();
@@ -135,6 +136,9 @@ public class NewsFeedController extends VBox {
             @Override
             public void onFailure(Call<NewsResponse> call, Throwable throwable) {
                 System.out.println("Error occured getting data " + throwable.getMessage());
+                Platform.runLater(() -> {
+                    cardDisplayArea.getChildren().clear();
+                });
             }
         });
 
@@ -152,6 +156,7 @@ public class NewsFeedController extends VBox {
 
                 List<HBox> renderedBox = cardData.get();
                 Platform.runLater(() -> {
+                    this.cardDisplayArea.getChildren().clear();
                     this.cardDisplayArea.getChildren().addAll(renderedBox);
                 });
 

@@ -1,10 +1,13 @@
 package com.example.demo.components;
 
 import atlantafx.base.controls.Card;
+import atlantafx.base.controls.ModalPane;
 import atlantafx.base.controls.Spacer;
+import atlantafx.base.layout.ModalBox;
 import atlantafx.base.theme.Styles;
 import javafx.fxml.FXML;
 import javafx.geometry.Orientation;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.HBox;
@@ -27,6 +30,10 @@ public class BasicCard extends Card {
     @FXML
     private String footerText;
 
+    private Button detailsModalBtn;
+
+    private ModalPane modalPane;
+
     public BasicCard() {
         super();
         setup();
@@ -41,10 +48,29 @@ public class BasicCard extends Card {
         setup();
     }
 
+    private void createDialogOnDetailBtnClick(){
+        this.modalPane = new ModalPane();
+        Dialog dialog = new Dialog(450,450);
+
+
+        TextFlow textFlow = new TextFlow(new Text("FULL SCREEN MODE"),new Text(this.bodyText));
+        Button closeBtn = new Button("CLOSE");
+        closeBtn.setOnAction(e ->{
+            modalPane.hide(true);
+        });
+        VBox layout = new VBox(16,textFlow,closeBtn);
+        dialog.getChildren().add(layout);
+        this.detailsModalBtn.setOnAction(evt ->{
+            System.out.println("Opening modal.....");
+            modalPane.show(dialog);
+        });
+    }
+
     public void setup() {
         //Set dimensions of card
         this.setMaxWidth(300);
-        this.setMaxHeight(250);
+//        this.setMaxHeight(400);
+        this.setPrefHeight(500);
 
         //Set title
         Label titleLabel = new Label(titleText);
@@ -59,7 +85,14 @@ public class BasicCard extends Card {
         }
 
         //Set body
-        TextFlow textBody = new TextFlow(new Text(bodyText));
+        String body;
+        if (bodyText != null && bodyText.length() > 100) {
+            body = bodyText.substring(0, 100);
+        }
+        else {
+            body = bodyText;
+        }
+        TextFlow textBody = new TextFlow(new Text(body));
         this.setBody(textBody);
 
         //Set Footer
@@ -71,8 +104,17 @@ public class BasicCard extends Card {
         Separator separator2 = new Separator(Orientation.HORIZONTAL);
         Label footerDisplayText = new Label(footerText);
         footerDisplayText.getStyleClass().add(Styles.TEXT);
-        VBox footerContainer = new VBox(separator, footerData, separator2, footerDisplayText);
+
+        //Details Modal Button
+        this.detailsModalBtn = new Button("DETAILS");
+        this.detailsModalBtn.getStyleClass().addAll(Styles.FLAT, Styles.ACCENT);
+        this.detailsModalBtn.setMnemonicParsing(true);
+        Separator separator3 = new Separator(Orientation.HORIZONTAL);
+        createDialogOnDetailBtnClick();
+        VBox footerContainer =
+                new VBox(separator, footerData, separator2, footerDisplayText, separator3, this.detailsModalBtn);
         this.setFooter(footerContainer);
+
 
 
     }

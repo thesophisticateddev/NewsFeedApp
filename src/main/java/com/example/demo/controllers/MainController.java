@@ -15,6 +15,7 @@ public class MainController  {
     public void initialize() {
         this.newsFeedController = new NewsFeedController();
         this.liveUpdatesController = new LiveUpdatesController();
+        this.newsFeedController.injectMainController(this);
     }
 
 
