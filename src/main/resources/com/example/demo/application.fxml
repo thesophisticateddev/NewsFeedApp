@@ -22,7 +22,10 @@
             </Tab>
             <Tab text="live updates">
                 <content>
-                    <fx:include source="LiveUpdates.fxml" fx:id="liveUpdates"/>
+                    <StackPane>
+                        <fx:include source="LiveUpdates.fxml" fx:id="liveUpdates"/>
+                    </StackPane>
+
                 </content>
             </Tab>
         </TabPane>

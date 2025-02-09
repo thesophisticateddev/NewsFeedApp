@@ -31,16 +31,14 @@ import java.util.concurrent.ExecutionException;
 
 public class NewsFeedController extends VBox {
 
+    private static final boolean cardsFetched = false;
     private final INewsClient client;
     @FXML
     private VBox cardDisplayArea;
-
     @FXML
     private Label loadNewsDataLabel;
-
     @FXML
     private ScrollPane cardDisplayScrollPane;
-
     private MainController mainController;
 
     public NewsFeedController() {
@@ -98,14 +96,16 @@ public class NewsFeedController extends VBox {
         if (this.cardDisplayArea == null) {
             this.cardDisplayArea = new VBox(10);
             this.cardDisplayArea.setFillWidth(true);
+            // Set the width to main application
             this.cardDisplayArea.setPrefWidth(MainApplication.WIDTH);
+            loadData();
         }
 
         if (this.loadNewsDataLabel == null) {
             this.loadNewsDataLabel = new Label("Loading news...");
         }
 
-        loadData();
+
     }
 
     public void dispatchNewsLoadNotification() {
@@ -148,7 +148,6 @@ public class NewsFeedController extends VBox {
     public void createNewsCards(NewsResponse newsData, int cardsInRow) {
         System.out.println("Task started to create cards");
         Task<List<HBox>> cardData = getListTask(newsData, cardsInRow);
-//        cardData.setOnRunning((stateEvent) -> System.out.println("Task to render cards is running"));
         cardData.setOnSucceeded((succeeded) -> {
 
             try {
@@ -156,7 +155,9 @@ public class NewsFeedController extends VBox {
 
                 List<HBox> renderedBox = cardData.get();
                 Platform.runLater(() -> {
+                    //Clear the card display to get the refreshed data
                     this.cardDisplayArea.getChildren().clear();
+                    // Load the card data
                     this.cardDisplayArea.getChildren().addAll(renderedBox);
                 });
 
@@ -169,8 +170,5 @@ public class NewsFeedController extends VBox {
             }
 
         });
-
-
     }
-
 }
